@@ -1,0 +1,14 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cmd /c \"C:\\\\Users\\\\1\\\\\\.maven\\\\maven-3\\.9\\.14\\\\bin\\\\mvn clean test-compile -q && C:\\\\Users\\\\1\\\\\\.maven\\\\maven-3\\.9\\.14\\\\bin\\\\mvn clean test -q\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"set JAVA_HOME=C:\\\\Users\\\\1\\\\\\.jdks\\\\openjdk-21\\\\jdk-21\\.0\\.8 && set PATH=C:\\\\Users\\\\1\\\\\\.jdks\\\\openjdk-21\\\\jdk-21\\.0\\.8\\\\bin;C:\\\\Users\\\\1\\\\\\.maven\\\\maven-3\\.9\\.14\\\\bin && C:\\\\Users\\\\1\\\\\\.maven\\\\maven-3\\.9\\.14\\\\bin\\\\mvn clean test -q\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    },
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic"
+}

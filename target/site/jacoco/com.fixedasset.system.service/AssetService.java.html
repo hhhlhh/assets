@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssetService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Fixed Asset Management System</a> &gt; <a href="index.source.html" class="el_package">com.fixedasset.system.service</a> &gt; <span class="el_source">AssetService.java</span></div><h1>AssetService.java</h1><pre class="source lang-java linenums">package com.fixedasset.system.service;
+
+import com.fixedasset.system.dto.AssetDto;
+import com.fixedasset.system.entity.Asset;
+import com.fixedasset.system.entity.AssetStatus;
+import com.fixedasset.system.entity.AssetType;
+import com.fixedasset.system.exception.DuplicateResourceException;
+import com.fixedasset.system.exception.ResourceNotFoundException;
+import com.fixedasset.system.repository.AssetRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+import java.util.List;
+
+@Service
+@Transactional
+<span class="fc" id="L22">public class AssetService {</span>
+
+    @Autowired
+    private AssetRepository assetRepository;
+
+    public List&lt;AssetDto&gt; getAllAssets() {
+<span class="nc" id="L28">        return assetRepository.findAll().stream()</span>
+<span class="nc" id="L29">                .map(this::convertToDto)</span>
+<span class="nc" id="L30">                .toList();</span>
+    }
+
+    public Page&lt;AssetDto&gt; getAssetsWithPagination(Pageable pageable) {
+<span class="nc" id="L34">        return assetRepository.findAll(pageable).map(this::convertToDto);</span>
+    }
+
+    public Optional&lt;AssetDto&gt; getAssetById(Long id) {
+<span class="nc" id="L38">        return assetRepository.findById(id)</span>
+<span class="nc" id="L39">                .map(this::convertToDto);</span>
+    }
+
+    public AssetDto createAsset(AssetDto assetDto) {
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (assetRepository.existsBySerialNumber(assetDto.getSerialNumber())) {</span>
+<span class="nc" id="L44">            throw new DuplicateResourceException(&quot;序列号已存在: &quot; + assetDto.getSerialNumber());</span>
+        }
+
+<span class="nc" id="L47">        Asset asset = convertToEntity(assetDto);</span>
+<span class="nc" id="L48">        Asset savedAsset = assetRepository.save(asset);</span>
+<span class="nc" id="L49">        return convertToDto(savedAsset);</span>
+    }
+
+    public AssetDto updateAsset(Long id, AssetDto assetDto) {
+<span class="nc" id="L53">        Asset existingAsset = assetRepository.findById(id)</span>
+<span class="nc" id="L54">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;资产不存在，ID: &quot; + id));</span>
+
+        // 检查序列号的唯一性（排除当前资产）
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (!existingAsset.getSerialNumber().equals(assetDto.getSerialNumber()) &amp;&amp;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                assetRepository.existsBySerialNumber(assetDto.getSerialNumber())) {</span>
+<span class="nc" id="L59">            throw new DuplicateResourceException(&quot;序列号已存在: &quot; + assetDto.getSerialNumber());</span>
+        }
+
+<span class="nc" id="L62">        updateEntityFromDto(existingAsset, assetDto);</span>
+<span class="nc" id="L63">        Asset updatedAsset = assetRepository.save(existingAsset);</span>
+<span class="nc" id="L64">        return convertToDto(updatedAsset);</span>
+    }
+
+    public void deleteAsset(Long id) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (!assetRepository.existsById(id)) {</span>
+<span class="nc" id="L69">            throw new ResourceNotFoundException(&quot;资产不存在，ID: &quot; + id);</span>
+        }
+<span class="nc" id="L71">        assetRepository.deleteById(id);</span>
+<span class="nc" id="L72">    }</span>
+
+    public Page&lt;AssetDto&gt; searchAssets(String keyword, Pageable pageable) {
+<span class="nc" id="L75">        return assetRepository.searchAssets(keyword, pageable).map(this::convertToDto);</span>
+    }
+
+    public List&lt;AssetDto&gt; getAssetsByType(AssetType type) {
+<span class="nc" id="L79">        return assetRepository.findByType(type).stream()</span>
+<span class="nc" id="L80">                .map(this::convertToDto)</span>
+<span class="nc" id="L81">                .toList();</span>
+    }
+
+    public List&lt;AssetDto&gt; getAssetsByStatus(AssetStatus status) {
+<span class="nc" id="L85">        return assetRepository.findByStatus(status).stream()</span>
+<span class="nc" id="L86">                .map(this::convertToDto)</span>
+<span class="nc" id="L87">                .toList();</span>
+    }
+
+    public long getTotalAssetCount() {
+<span class="nc" id="L91">        return assetRepository.countAllAssets();</span>
+    }
+
+    public long getAssetCountByType(AssetType type) {
+<span class="nc" id="L95">        return assetRepository.countByType(type);</span>
+    }
+
+    public long getAssetCountByStatus(AssetStatus status) {
+<span class="nc" id="L99">        return assetRepository.countByStatus(status);</span>
+    }
+
+    public void updateAssetStatus(Long id, AssetStatus newStatus) {
+<span class="nc" id="L103">        Asset asset = assetRepository.findById(id)</span>
+<span class="nc" id="L104">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;资产不存在，ID: &quot; + id));</span>
+<span class="nc" id="L105">        asset.setStatus(newStatus);</span>
+<span class="nc" id="L106">        assetRepository.save(asset);</span>
+<span class="nc" id="L107">    }</span>
+
+    private AssetDto convertToDto(Asset asset) {
+<span class="nc" id="L110">        AssetDto dto = new AssetDto();</span>
+<span class="nc" id="L111">        dto.setId(asset.getId());</span>
+<span class="nc" id="L112">        dto.setName(asset.getName());</span>
+<span class="nc" id="L113">        dto.setType(asset.getType());</span>
+<span class="nc" id="L114">        dto.setModel(asset.getModel());</span>
+<span class="nc" id="L115">        dto.setSerialNumber(asset.getSerialNumber());</span>
+<span class="nc" id="L116">        dto.setPurchaseDate(asset.getPurchaseDate());</span>
+<span class="nc" id="L117">        dto.setPrice(asset.getPrice());</span>
+<span class="nc" id="L118">        dto.setStatus(asset.getStatus());</span>
+<span class="nc" id="L119">        dto.setLocation(asset.getLocation());</span>
+<span class="nc" id="L120">        dto.setDescription(asset.getDescription());</span>
+<span class="nc" id="L121">        dto.setAssignedTo(asset.getAssignedTo());</span>
+<span class="nc" id="L122">        dto.setDepartment(asset.getDepartment());</span>
+<span class="nc" id="L123">        return dto;</span>
+    }
+
+    private Asset convertToEntity(AssetDto dto) {
+<span class="nc" id="L127">        Asset asset = new Asset();</span>
+<span class="nc" id="L128">        updateEntityFromDto(asset, dto);</span>
+<span class="nc" id="L129">        return asset;</span>
+    }
+
+    private void updateEntityFromDto(Asset asset, AssetDto dto) {
+<span class="nc" id="L133">        asset.setName(dto.getName());</span>
+<span class="nc" id="L134">        asset.setType(dto.getType());</span>
+<span class="nc" id="L135">        asset.setModel(dto.getModel());</span>
+<span class="nc" id="L136">        asset.setSerialNumber(dto.getSerialNumber());</span>
+<span class="nc" id="L137">        asset.setPurchaseDate(dto.getPurchaseDate());</span>
+<span class="nc" id="L138">        asset.setPrice(dto.getPrice());</span>
+<span class="nc" id="L139">        asset.setStatus(dto.getStatus());</span>
+<span class="nc" id="L140">        asset.setLocation(dto.getLocation());</span>
+<span class="nc" id="L141">        asset.setDescription(dto.getDescription());</span>
+<span class="nc" id="L142">        asset.setAssignedTo(dto.getAssignedTo());</span>
+<span class="nc" id="L143">        asset.setDepartment(dto.getDepartment());</span>
+<span class="nc" id="L144">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

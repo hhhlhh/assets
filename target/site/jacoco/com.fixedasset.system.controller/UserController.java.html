@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Fixed Asset Management System</a> &gt; <a href="index.source.html" class="el_package">com.fixedasset.system.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.fixedasset.system.controller;
+
+import com.fixedasset.system.dto.UserDto;
+import com.fixedasset.system.entity.UserRole;
+import com.fixedasset.system.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/users&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L17">public class UserController {</span>
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;UserDto&gt;&gt; getAllUsers() {
+<span class="nc" id="L24">        List&lt;UserDto&gt; users = userService.getAllUsers();</span>
+<span class="nc" id="L25">        return ResponseEntity.ok(users);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;UserDto&gt; getUserById(@PathVariable Long id) {
+<span class="nc" id="L30">        return userService.getUserById(id)</span>
+<span class="nc" id="L31">                .map(user -&gt; ResponseEntity.ok(user))</span>
+<span class="nc" id="L32">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;UserDto&gt; createUser(@Valid @RequestBody UserDto userDto) {
+<span class="nc" id="L37">        UserDto createdUser = userService.createUser(userDto);</span>
+<span class="nc" id="L38">        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;UserDto&gt; updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
+        try {
+<span class="nc" id="L44">            UserDto updatedUser = userService.updateUser(id, userDto);</span>
+<span class="nc" id="L45">            return ResponseEntity.ok(updatedUser);</span>
+<span class="nc" id="L46">        } catch (com.fixedasset.system.exception.ResourceNotFoundException e) {</span>
+<span class="nc" id="L47">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteUser(@PathVariable Long id) {
+        try {
+<span class="nc" id="L54">            userService.deleteUser(id);</span>
+<span class="nc" id="L55">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L56">        } catch (com.fixedasset.system.exception.ResourceNotFoundException e) {</span>
+<span class="nc" id="L57">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    @GetMapping(&quot;/role/{role}&quot;)
+    public ResponseEntity&lt;List&lt;UserDto&gt;&gt; getUsersByRole(@PathVariable UserRole role) {
+<span class="nc" id="L63">        List&lt;UserDto&gt; users = userService.getUsersByRole(role);</span>
+<span class="nc" id="L64">        return ResponseEntity.ok(users);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaintenanceRecordController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Fixed Asset Management System</a> &gt; <a href="index.source.html" class="el_package">com.fixedasset.system.controller</a> &gt; <span class="el_source">MaintenanceRecordController.java</span></div><h1>MaintenanceRecordController.java</h1><pre class="source lang-java linenums">package com.fixedasset.system.controller;
+
+import com.fixedasset.system.dto.MaintenanceRecordDto;
+import com.fixedasset.system.entity.MaintenanceType;
+import com.fixedasset.system.service.MaintenanceRecordService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/maintenance&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L22">public class MaintenanceRecordController {</span>
+
+    @Autowired
+    private MaintenanceRecordService maintenanceRecordService;
+
+    @GetMapping
+    public ResponseEntity&lt;Page&lt;MaintenanceRecordDto&gt;&gt; getAllMaintenanceRecords(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size) {
+<span class="nc" id="L31">        Pageable pageable = PageRequest.of(page, size);</span>
+<span class="nc" id="L32">        Page&lt;MaintenanceRecordDto&gt; records = maintenanceRecordService.getMaintenanceRecordsWithPagination(pageable);</span>
+<span class="nc" id="L33">        return ResponseEntity.ok(records);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;MaintenanceRecordDto&gt; getMaintenanceRecordById(@PathVariable Long id) {
+<span class="nc" id="L38">        return maintenanceRecordService.getMaintenanceRecordById(id)</span>
+<span class="nc" id="L39">                .map(record -&gt; ResponseEntity.ok(record))</span>
+<span class="nc" id="L40">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;MaintenanceRecordDto&gt; createMaintenanceRecord(@Valid @RequestBody MaintenanceRecordDto dto) {
+<span class="nc" id="L45">        MaintenanceRecordDto createdRecord = maintenanceRecordService.createMaintenanceRecord(dto);</span>
+<span class="nc" id="L46">        return ResponseEntity.status(HttpStatus.CREATED).body(createdRecord);</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;MaintenanceRecordDto&gt; updateMaintenanceRecord(@PathVariable Long id, @Valid @RequestBody MaintenanceRecordDto dto) {
+        try {
+<span class="nc" id="L52">            MaintenanceRecordDto updatedRecord = maintenanceRecordService.updateMaintenanceRecord(id, dto);</span>
+<span class="nc" id="L53">            return ResponseEntity.ok(updatedRecord);</span>
+<span class="nc" id="L54">        } catch (com.fixedasset.system.exception.ResourceNotFoundException e) {</span>
+<span class="nc" id="L55">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteMaintenanceRecord(@PathVariable Long id) {
+        try {
+<span class="nc" id="L62">            maintenanceRecordService.deleteMaintenanceRecord(id);</span>
+<span class="nc" id="L63">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L64">        } catch (com.fixedasset.system.exception.ResourceNotFoundException e) {</span>
+<span class="nc" id="L65">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    @GetMapping(&quot;/asset/{assetId}&quot;)
+    public ResponseEntity&lt;List&lt;MaintenanceRecordDto&gt;&gt; getMaintenanceRecordsByAssetId(@PathVariable Long assetId) {
+<span class="nc" id="L71">        List&lt;MaintenanceRecordDto&gt; records = maintenanceRecordService.getMaintenanceRecordsByAssetId(assetId);</span>
+<span class="nc" id="L72">        return ResponseEntity.ok(records);</span>
+    }
+
+    @GetMapping(&quot;/asset/{assetId}/paginated&quot;)
+    public ResponseEntity&lt;Page&lt;MaintenanceRecordDto&gt;&gt; getMaintenanceRecordsByAssetIdPaginated(
+            @PathVariable Long assetId,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size) {
+<span class="nc" id="L80">        Pageable pageable = PageRequest.of(page, size);</span>
+<span class="nc" id="L81">        Page&lt;MaintenanceRecordDto&gt; records = maintenanceRecordService.getMaintenanceRecordsByAssetId(assetId, pageable);</span>
+<span class="nc" id="L82">        return ResponseEntity.ok(records);</span>
+    }
+
+    @GetMapping(&quot;/type/{type}&quot;)
+    public ResponseEntity&lt;List&lt;MaintenanceRecordDto&gt;&gt; getMaintenanceRecordsByType(@PathVariable MaintenanceType type) {
+<span class="nc" id="L87">        List&lt;MaintenanceRecordDto&gt; records = maintenanceRecordService.getMaintenanceRecordsByType(type);</span>
+<span class="nc" id="L88">        return ResponseEntity.ok(records);</span>
+    }
+
+    @GetMapping(&quot;/date-range&quot;)
+    public ResponseEntity&lt;List&lt;MaintenanceRecordDto&gt;&gt; getMaintenanceRecordsByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+<span class="nc" id="L95">        List&lt;MaintenanceRecordDto&gt; records = maintenanceRecordService.getMaintenanceRecordsByDateRange(startDate, endDate);</span>
+<span class="nc" id="L96">        return ResponseEntity.ok(records);</span>
+    }
+
+    @GetMapping(&quot;/cost/{assetId}&quot;)
+    public ResponseEntity&lt;java.util.Map&lt;String, Object&gt;&gt; getTotalMaintenanceCost(@PathVariable Long assetId) {
+<span class="nc" id="L101">        double totalCost = maintenanceRecordService.getTotalMaintenanceCostByAsset(assetId);</span>
+<span class="nc" id="L102">        java.util.Map&lt;String, Object&gt; result = new java.util.HashMap&lt;&gt;();</span>
+<span class="nc" id="L103">        result.put(&quot;assetId&quot;, assetId);</span>
+<span class="nc" id="L104">        result.put(&quot;totalCost&quot;, totalCost);</span>
+<span class="nc" id="L105">        return ResponseEntity.ok(result);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssetStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Fixed Asset Management System</a> &gt; <a href="index.source.html" class="el_package">com.fixedasset.system.entity</a> &gt; <span class="el_source">AssetStatus.java</span></div><h1>AssetStatus.java</h1><pre class="source lang-java linenums">package com.fixedasset.system.entity;
+
+<span class="fc" id="L3">public enum AssetStatus {</span>
+<span class="fc" id="L4">    IN_USE(&quot;在用&quot;),</span>
+<span class="fc" id="L5">    IDLE(&quot;闲置&quot;),</span>
+<span class="fc" id="L6">    MAINTENANCE(&quot;维修中&quot;),</span>
+<span class="fc" id="L7">    SCRAPPED(&quot;报废&quot;);</span>
+
+    private final String displayName;
+
+<span class="fc" id="L11">    AssetStatus(String displayName) {</span>
+<span class="fc" id="L12">        this.displayName = displayName;</span>
+<span class="fc" id="L13">    }</span>
+
+    public String getDisplayName() {
+<span class="nc" id="L16">        return displayName;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
