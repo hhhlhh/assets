@@ -35,7 +35,7 @@
 
 #### 手动创建数据库命令
 ```bash
-mysql -h 192.168.12.209 -u root -prootroot < create_database.sql
+mysql -h 192.168.112.209 -u root -proot < create_database.sql
 ```
 
 ### 2. 后端部署
