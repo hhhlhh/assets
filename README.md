@@ -27,9 +27,9 @@
 ```sql
 -- 执行 create_database.sql 文件中的SQL语句
 -- 数据库连接信息：
--- 主机: 192.168.12.209
+-- 主机: 192.168.112.209
 -- 用户名: root
--- 密码: rootroot
+-- 密码: root
 -- 数据库: asset_management
 ```
 
