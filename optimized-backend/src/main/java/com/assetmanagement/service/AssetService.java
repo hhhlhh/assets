@@ -3,6 +3,8 @@ package com.assetmanagement.service;
 import com.assetmanagement.dto.AssetDto;
 import com.assetmanagement.dto.AssetSearchDto;
 import com.assetmanagement.entity.Asset;
+import com.assetmanagement.exception.DuplicateResourceException;
+import com.assetmanagement.exception.ResourceNotFoundException;
 import com.assetmanagement.repository.AssetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,7 +31,7 @@ public class AssetService {
     public Asset save(Asset asset) {
         // 检查资产编号是否已存在
         if (asset.getId() == null && assetRepository.existsByAssetCode(asset.getAssetCode())) {
-            throw new RuntimeException("资产编号已存在: " + asset.getAssetCode());
+            throw new DuplicateResourceException("Asset", "assetCode", asset.getAssetCode());
         }
         return assetRepository.save(asset);
     }
@@ -85,12 +87,12 @@ public class AssetService {
      */
     public Asset update(Long id, Asset assetDetails) {
         Asset asset = assetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("资产不存在，ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Asset", "id", id));
 
         // 如果修改了资产编号，检查是否重复
         if (!asset.getAssetCode().equals(assetDetails.getAssetCode()) &&
             assetRepository.existsByAssetCode(assetDetails.getAssetCode())) {
-            throw new RuntimeException("资产编号已存在: " + assetDetails.getAssetCode());
+            throw new DuplicateResourceException("Asset", "assetCode", assetDetails.getAssetCode());
         }
 
         updateAssetFields(asset, assetDetails);
@@ -102,7 +104,7 @@ public class AssetService {
      */
     public void deleteById(Long id) {
         if (!assetRepository.existsById(id)) {
-            throw new RuntimeException("资产不存在，ID: " + id);
+            throw new ResourceNotFoundException("Asset", "id", id);
         }
         assetRepository.deleteById(id);
     }

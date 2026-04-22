@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -27,6 +28,9 @@ public class AssetController {
 
     @Autowired
     private ExcelExportService excelExportService;
+
+    @Autowired
+    private ExcelImportService excelImportService;
 
     /**
      * 获取资产列表（分页+搜索）
@@ -157,6 +161,32 @@ public class AssetController {
             excelExportService.exportToCsv(assets, response);
         } catch (IOException e) {
             throw new RuntimeException("导出CSV失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入Excel
+     */
+    @PostMapping("/import/excel")
+    public ResponseEntity<?> importFromExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            ExcelImportService.ImportResult result = excelImportService.importFromExcel(file);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("successCount", result.getSuccessCount());
+            response.put("errorCount", result.getErrorCount());
+            response.put("totalCount", result.getTotalCount());
+            response.put("errors", result.getErrors());
+
+            if (result.getErrorCount() == 0) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body(response);
+            }
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "文件读取失败: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 

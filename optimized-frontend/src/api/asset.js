@@ -61,5 +61,16 @@ export const assetApi = {
   // 获取统计数据
   getStatistics: () => {
     return axios.get(`${API_BASE_URL}/assets/statistics`)
+  },
+
+  // 导入Excel
+  importExcel: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return axios.post(`${API_BASE_URL}/assets/import/excel`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }
