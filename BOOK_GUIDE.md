@@ -507,10 +507,8 @@ cd /soft/excl
 ls -la
 
 # 项目结构
-├── asset-management-backend/    # 后端项目
-├── asset-management-frontend/   # 原始前端
-├── optimized-backend/          # 优化后端
-├── optimized-frontend/         # 优化前端
+├── optimized-backend/          # 优化后端（Spring Boot）
+├── optimized-frontend/         # 优化前端（Vue 3）
 ├── assets/                     # 资源文件
 ├── create_database.sql         # 数据库脚本
 └── create_optimized_database.sql # 优化数据库脚本
@@ -2554,7 +2552,7 @@ public class SpringBootFeatures {
 ##### 10.2.1 标准项目结构
 
 ```
-asset-management-backend/
+optimized-backend/
 ├── src/main/java/
 │   └── com/assetmanagement/
 │       ├── AssetManagementApplication.java          # Spring Boot启动类
@@ -2563,12 +2561,11 @@ asset-management-backend/
 │       │   ├── DatabaseConfig.java                  # 数据库配置
 │       │   └── SwaggerConfig.java                   # API文档配置
 │       ├── controller/                             # 控制器层
-│       │   ├── AssetController.java                # 资产控制器
-│       │   └── StatisticsController.java            # 统计控制器
+│       │   └── AssetController.java                 # 资产控制器（包含统计功能）
 │       ├── service/                                # 服务层
-│       │   ├── AssetService.java                    # 资产服务
-│       │   ├── ExcelService.java                    # Excel服务
-│       │   └── StatisticsService.java               # 统计服务
+│       │   ├── AssetService.java                   # 资产业务服务
+│       │   ├── ExcelExportService.java             # Excel导出服务
+│       │   └── ExcelImportService.java             # Excel导入服务
 │       ├── repository/                             # 数据访问层
 │       │   └── AssetRepository.java                # 资产仓库
 │       ├── entity/                                 # 实体类

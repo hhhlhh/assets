@@ -46,13 +46,13 @@ mysql -h 192.168.12.209 -u root -prootroot < create_database.sql
 
 #### 编译和运行
 ```bash
-cd asset-management-backend
+cd optimized-backend
 
 # 编译项目
 mvn clean package
 
 # 运行项目
-java -jar target/asset-management-backend-1.0.0.jar
+java -jar target/fixed-asset-system-1.0.0.jar
 
 # 或者使用Maven运行
 mvn spring-boot:run
@@ -72,7 +72,7 @@ mvn spring-boot:run
 
 #### 安装和运行
 ```bash
-cd asset-management-frontend
+cd optimized-frontend
 
 # 安装依赖
 npm install
@@ -93,18 +93,24 @@ npm run build
 
 ### 后端结构
 ```
-asset-management-backend/
+optimized-backend/
 ├── src/main/java/
 │   └── com/assetmanagement/
 │       ├── AssetManagementApplication.java    # 主应用类
+│       ├── config/                            # 配置类
 │       ├── controller/                        # 控制器层
-│       │   └── FixedAssetController.java      # 资产控制器
-│       ├── service/                           # 服务层
-│       │   └── FixedAssetService.java         # 资产服务
+│       │   └── AssetController.java           # 资产控制器
+│       ├── dto/                              # 数据传输对象
+│       ├── entity/                           # 实体层
+│       │   └── Asset.java                    # 资产实体
+│       ├── exception/                        # 异常处理
 │       ├── repository/                       # 数据访问层
-│       │   └── FixedAssetRepository.java     # 资产仓库
-│       └── entity/                           # 实体层
-│           └── FixedAsset.java               # 资产实体
+│       │   └── AssetRepository.java         # 资产仓库
+│       ├── service/                          # 服务层
+│       │   ├── AssetService.java            # 资产服务
+│       │   ├── ExcelExportService.java      # Excel导出服务
+│       │   └── ExcelImportService.java      # Excel导入服务
+│       └── util/                            # 工具类
 ├── src/main/resources/
 │   ├── application.yml                       # 配置文件
 │   └── data.sql                              # 初始化数据（可选）
@@ -113,23 +119,21 @@ asset-management-backend/
 
 ### 前端结构
 ```
-asset-management-frontend/
+optimized-frontend/
 ├── src/
-│   ├── assets/                               # 静态资源
-│   ├── components/                           # 公共组件
-│   ├── views/                                # 页面组件
-│   │   ├── AssetList.vue                     # 资产列表
-│   │   ├── AddAsset.vue                      # 新增资产
-│   │   ├── EditAsset.vue                     # 编辑资产
-│   │   ├── Statistics.vue                    # 统计报表
-│   │   └── Home.vue                          # 首页
-│   ├── stores/                               # 状态管理
-│   │   └── asset.js                          # 资产状态管理
-│   ├── router/                               # 路由配置
-│   │   └── index.js                          # 路由定义
-│   ├── App.vue                               # 根组件
-│   └── main.js                               # 入口文件
-├── package.json                              # npm配置
+│   ├── api/                                  # API接口
+│   │   └── asset.js                         # 资产API
+│   ├── assets/                              # 静态资源
+│   ├── components/                          # 公共组件
+│   ├── views/                               # 页面组件
+│   │   ├── AssetManagement.vue              # 资产管理页面
+│   │   └── Statistics.vue                   # 统计报表页面
+│   ├── router/                              # 路由配置
+│   │   └── index.js                         # 路由定义
+│   ├── App.vue                              # 根组件
+│   ├── main.js                              # 入口文件
+│   └── style.css                            # 全局样式
+├── package.json                             # npm配置
 └── vite.config.js                           # Vite配置
 ```
 
@@ -142,19 +146,38 @@ http://localhost:8080/api
 
 ### 资产相关接口
 
-#### 获取资产列表（分页）
+#### 获取所有资产（简单列表）
 ```
-GET /assets?page=0&size=10&sortBy=id
+GET /api/assets
 ```
 
-#### 搜索资产
+#### 搜索资产（分页+多条件）
 ```
-GET /assets/search?assetName=&department=&assetStatus=&page=0&size=10
+POST /api/assets/search
+Content-Type: application/json
+
+{
+  "assetName": "电脑",
+  "department": "技术部",
+  "assetStatus": "在用",
+  "page": 0,
+  "size": 10
+}
+```
+
+#### 根据ID获取资产
+```
+GET /api/assets/{id}
+```
+
+#### 根据资产编号获取资产
+```
+GET /api/assets/code/{assetCode}
 ```
 
 #### 创建资产
 ```
-POST /assets
+POST /api/assets
 Content-Type: application/json
 
 {
@@ -175,41 +198,100 @@ Content-Type: application/json
 
 #### 更新资产
 ```
-PUT /assets/{id}
+PUT /api/assets/{id}
 Content-Type: application/json
 ```
 
 #### 删除资产
 ```
-DELETE /assets/{id}
+DELETE /api/assets/{id}
+```
+
+#### 批量删除资产
+```
+POST /api/assets/batch-delete
+Content-Type: application/json
+
+[1, 2, 3]
+```
+
+#### 导出Excel
+```
+GET /api/assets/export/excel
+```
+
+#### 导出CSV
+```
+GET /api/assets/export/csv
+```
+
+#### 导入Excel
+```
+POST /api/assets/import/excel
+Content-Type: multipart/form-data
+Form-Data: file=@assets.xlsx
 ```
 
 #### 获取统计数据
 ```
-GET /assets/statistics
+GET /api/assets/statistics
+
+Response:
+{
+  "departmentStats": [
+    ["技术部", 15],
+    ["财务部", 8]
+  ],
+  "statusStats": [
+    ["在用", 20],
+    ["闲置", 3]
+  ],
+  "categoryStats": [
+    ["电子设备", 12],
+    ["办公家具", 11]
+  ],
+  "totalOriginalValue": 150000.00,
+  "totalNetValue": 135000.00,
+  "totalCount": 23
+}
 ```
 
 ## 功能特性
 
 ### 资产管理
 - ✅ 资产新增、编辑、删除
-- ✅ 资产列表分页显示
+- ✅ 资产列表分页显示（支持排序）
 - ✅ 多条件搜索和筛选
-- ✅ 资产状态管理
-- ✅ 批量操作支持
+- ✅ 资产状态管理（在用、闲置、维修中、报废）
+- ✅ 批量操作支持（批量删除）
+- ✅ Excel导入导出功能
 
 ### 统计报表
 - ✅ 部门资产统计
-- ✅ 资产状态统计
-- ✅ 资产价值统计
-- ✅ 图表展示
+- ✅ 资产状态统计  
+- ✅ 资产价值统计（原值、净值、折旧率）
+- ✅ 分类统计
+- ✅ ECharts可视化图表展示
 
 ### 系统特性
-- ✅ 响应式设计
-- ✅ 数据验证
-- ✅ 错误处理
-- ✅ 加载状态
-- ✅ 消息提示
+- ✅ 响应式设计（移动端适配）
+- ✅ 完整的数据验证机制
+- ✅ 统一的异常处理和用户提示
+- ✅ 加载状态和进度指示
+- ✅ 实时搜索反馈
+- ✅ 操作确认对话框
+
+### 技术亮点
+- ✅ Spring Boot + Vue 3前后端分离架构
+- ✅ JPA + MySQL企业级数据访问
+- ✅ Element Plus现代化UI组件库
+- ✅ Pinia状态管理
+- ✅ Axios HTTP客户端
+- ✅ Apache POI Excel处理
+- ✅ 全局异常处理器
+- ✅ Bean Validation数据验证
+- ✅ 事务管理
+- ✅ 索引优化查询性能
 
 ## 开发说明
 

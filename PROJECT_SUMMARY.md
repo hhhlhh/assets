@@ -88,7 +88,7 @@ CREATE TABLE fixed_assets (
 - `GET /api/assets/code/{assetCode}` - 根据编号获取资产
 
 ### 搜索接口
-- `POST /api/assets/search` - 多条件搜索（分页）
+- `POST /api/assets/search` - 多条件搜索（分页+排序）
 
 ### CRUD接口
 - `POST /api/assets` - 创建资产
@@ -97,12 +97,15 @@ CREATE TABLE fixed_assets (
 - `POST /api/assets/batch-delete` - 批量删除
 
 ### 导入导出接口
-- `POST /api/assets/import/excel` - Excel导入
-- `GET /api/assets/export/excel` - Excel导出
-- `GET /api/assets/export/csv` - CSV导出
+- `POST /api/assets/import/excel` - Excel批量导入
+- `GET /api/assets/export/excel` - Excel数据导出
+- `GET /api/assets/export/csv` - CSV格式导出
 
 ### 统计接口
-- `GET /api/assets/statistics` - 获取统计数据
+- `GET /api/assets/statistics` - 综合统计数据
+- `GET /api/assets/statistics/department` - 部门统计
+- `GET /api/assets/statistics/status` - 状态统计
+- `GET /api/assets/statistics/category` - 分类统计
 
 ## 代码质量保障
 

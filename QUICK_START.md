@@ -148,24 +148,44 @@ mvn test -Dtest=AssetServiceTest
 optimized-frontend/
 ├── src/
 │   ├── api/           # API接口
-│   ├── components/    # 组件
-│   ├── views/         # 页面
-│   ├── router/        # 路由
-│   └── App.vue        # 根组件
-├── package.json      # 依赖配置
-└── vite.config.js    # 构建配置
+│   │   └── asset.js  # 资产API
+│   ├── assets/        # 静态资源
+│   ├── components/    # 公共组件
+│   ├── views/         # 页面组件
+│   │   ├── AssetManagement.vue  # 资产管理页面
+│   │   └── Statistics.vue       # 统计报表页面
+│   ├── router/        # 路由配置
+│   │   └── index.js  # 路由定义
+│   ├── App.vue        # 根组件
+│   ├── main.js        # 入口文件
+│   └── style.css      # 全局样式
+├── package.json      # npm配置
+└── vite.config.js    # Vite配置
 ```
 
 ### 后端结构
 ```
 optimized-backend/
-src/main/java/com/assetmanagement/
-├── controller/       # 控制器
-├── service/         # 服务层
-├── repository/      # 数据访问
-├── entity/          # 实体类
-├── dto/            # 数据传输对象
-└── exception/      # 异常处理
+├── src/main/java/com/assetmanagement/
+│   ├── AssetManagementApplication.java  # 主应用类
+│   ├── config/                         # 配置类
+│   ├── controller/                     # 控制器层
+│   │   └── AssetController.java        # 资产控制器
+│   ├── dto/                           # 数据传输对象
+│   ├── entity/                        # 实体层
+│   │   └── Asset.java                 # 资产实体
+│   ├── exception/                     # 异常处理
+│   ├── repository/                    # 数据访问层
+│   │   └── AssetRepository.java     # 资产仓库
+│   ├── service/                       # 服务层
+│   │   ├── AssetService.java         # 资产服务
+│   │   ├── ExcelExportService.java   # Excel导出服务
+│   │   └── ExcelImportService.java   # Excel导入服务
+│   └── util/                          # 工具类
+├── src/main/resources/
+│   ├── application.yml                # 配置文件
+│   └── data.sql                       # 初始化数据（可选）
+└── pom.xml                            # Maven配置
 ```
 
 ## 🌐 API快速参考
@@ -173,29 +193,41 @@ src/main/java/com/assetmanagement/
 ### 常用接口
 
 ```bash
-# 获取所有资产
+# 获取所有资产（简单列表）
 GET http://localhost:8080/api/assets
 
-# 搜索资产
+# 搜索资产（分页+多条件）
 POST http://localhost:8080/api/assets/search
+
+# 根据ID获取资产
+GET http://localhost:8080/api/assets/{id}
+
+# 根据资产编号获取资产
+GET http://localhost:8080/api/assets/code/{assetCode}
 
 # 创建资产
 POST http://localhost:8080/api/assets
 
 # 更新资产
-PUT http://localhost:8080/api/assets/1
+PUT http://localhost:8080/api/assets/{id}
 
 # 删除资产
-DELETE http://localhost:8080/api/assets/1
+DELETE http://localhost:8080/api/assets/{id}
 
-# 获取统计数据
-GET http://localhost:8080/api/assets/statistics
+# 批量删除资产
+POST http://localhost:8080/api/assets/batch-delete
+
+# 导出Excel
+GET http://localhost:8080/api/assets/export/excel
+
+# 导出CSV
+GET http://localhost:8080/api/assets/export/csv
 
 # 导入Excel
 POST http://localhost:8080/api/assets/import/excel
 
-# 导出Excel
-GET http://localhost:8080/api/assets/export/excel
+# 获取统计数据
+GET http://localhost:8080/api/assets/statistics
 ```
 
 ### 使用curl测试API
@@ -212,7 +244,14 @@ curl -X POST http://localhost:8080/api/assets \
     "assetName": "联想台式电脑",
     "assetCategory": "电子设备",
     "department": "技术部",
-    "originalValue": 5000.00
+    "userName": "张三",
+    "location": "办公室A-101",
+    "assetStatus": "在用",
+    "originalValue": 5000.00,
+    "netValue": 4500.00,
+    "startDate": "2023-01-15",
+    "brand": "联想",
+    "specification": "ThinkCentre M720"
   }'
 
 # 搜索资产
@@ -220,9 +259,16 @@ curl -X POST http://localhost:8080/api/assets/search \
   -H "Content-Type: application/json" \
   -d '{
     "assetName": "电脑",
+    "department": "技术部",
+    "assetStatus": "在用",
     "page": 0,
     "size": 10
   }'
+
+# 批量删除资产
+curl -X POST http://localhost:8080/api/assets/batch-delete \
+  -H "Content-Type: application/json" \
+  -d '[1, 2, 3]'
 ```
 
 ## 🎨 前端开发要点
