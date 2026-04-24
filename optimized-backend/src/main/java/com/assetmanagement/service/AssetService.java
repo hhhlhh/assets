@@ -29,6 +29,13 @@ public class AssetService {
      * 保存资产
      */
     public Asset save(Asset asset) {
+        // 自动生成资产编号: 021 + 序列号
+        if (asset.getAssetCode() == null || asset.getAssetCode().trim().isEmpty()) {
+            long count = assetRepository.count();
+            String generatedCode = "021" + String.format("%06d", count + 1);
+            asset.setAssetCode(generatedCode);
+        }
+
         // 检查资产编号是否已存在
         if (asset.getId() == null && assetRepository.existsByAssetCode(asset.getAssetCode())) {
             throw new DuplicateResourceException("Asset", "assetCode", asset.getAssetCode());

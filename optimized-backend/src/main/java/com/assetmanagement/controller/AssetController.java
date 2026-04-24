@@ -4,6 +4,11 @@ import com.assetmanagement.dto.AssetSearchDto;
 import com.assetmanagement.entity.Asset;
 import com.assetmanagement.service.AssetService;
 import com.assetmanagement.service.ExcelExportService;
+import com.assetmanagement.service.ExcelImportService;
+import com.assetmanagement.dto.StatisticsDto;
+import com.assetmanagement.dto.StatisticsDto.CategoryStatDto;
+import com.assetmanagement.dto.StatisticsDto.StatusStatDto;
+import com.assetmanagement.dto.StatisticsDto.DepartmentStatDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +19,13 @@ import org.springframework.http.HttpStatus;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/assets")
+@RequestMapping("/assets")
 @CrossOrigin(origins = "*")
 public class AssetController {
 
@@ -194,34 +200,65 @@ public class AssetController {
      * 获取统计数据
      */
     @GetMapping("/statistics")
-    public ResponseEntity<Map<String, Object>> getStatistics() {
+    public ResponseEntity<StatisticsDto> getStatistics() {
         try {
-            Map<String, Object> statistics = new HashMap<>();
-
-            // 部门统计
-            List<Object[]> departmentStats = assetService.countByDepartment();
-            statistics.put("departmentStats", departmentStats);
-
-            // 状态统计
-            List<Object[]> statusStats = assetService.countByAssetStatus();
-            statistics.put("statusStats", statusStats);
+            StatisticsDto statistics = new StatisticsDto();
 
             // 分类统计
             List<Object[]> categoryStats = assetService.countByAssetCategory();
-            statistics.put("categoryStats", categoryStats);
+            if (categoryStats != null) {
+                List<CategoryStatDto> categoryStatDtos = categoryStats.stream()
+                    .filter(arr -> arr != null && arr.length >= 2)
+                    .map(arr -> new CategoryStatDto(
+                        arr[0] != null ? arr[0].toString() : "未知", 
+                        arr[1] != null ? ((Number) arr[1]).longValue() : 0L))
+                    .collect(java.util.stream.Collectors.toList());
+                statistics.setCategoryStats(categoryStatDtos);
+            }
+
+            // 状态统计
+            List<Object[]> statusStats = assetService.countByAssetStatus();
+            if (statusStats != null) {
+                List<StatusStatDto> statusStatDtos = statusStats.stream()
+                    .filter(arr -> arr != null && arr.length >= 2)
+                    .map(arr -> new StatusStatDto(
+                        arr[0] != null ? arr[0].toString() : "未知", 
+                        arr[1] != null ? ((Number) arr[1]).longValue() : 0L))
+                    .collect(java.util.stream.Collectors.toList());
+                statistics.setStatusStats(statusStatDtos);
+            }
+
+            // 部门统计
+            List<Object[]> departmentStats = assetService.countByDepartment();
+            if (departmentStats != null) {
+                List<DepartmentStatDto> departmentStatDtos = departmentStats.stream()
+                    .filter(arr -> arr != null && arr.length >= 2)
+                    .map(arr -> new DepartmentStatDto(
+                        arr[0] != null ? arr[0].toString() : "未知", 
+                        arr[1] != null ? ((Number) arr[1]).longValue() : 0L))
+                    .collect(java.util.stream.Collectors.toList());
+                statistics.setDepartmentStats(departmentStatDtos);
+            }
 
             // 价值统计
             Object[] valueStats = assetService.sumAssetValues();
-            statistics.put("totalOriginalValue", valueStats[0] != null ? valueStats[0] : 0);
-            statistics.put("totalNetValue", valueStats[1] != null ? valueStats[1] : 0);
+            BigDecimal totalOriginalValue = BigDecimal.ZERO;
+            BigDecimal totalNetValue = BigDecimal.ZERO;
+            if (valueStats != null && valueStats.length >= 2) {
+                totalOriginalValue = valueStats[0] != null ? new BigDecimal(valueStats[0].toString()) : BigDecimal.ZERO;
+                totalNetValue = valueStats[1] != null ? new BigDecimal(valueStats[1].toString()) : BigDecimal.ZERO;
+            }
+            statistics.setTotalOriginalValue(totalOriginalValue);
+            statistics.setTotalNetValue(totalNetValue);
 
             // 总数统计
-            long totalCount = assetService.findAll().size();
-            statistics.put("totalCount", totalCount);
+            long totalCount = assetService.findAll() != null ? assetService.findAll().size() : 0;
+            statistics.setTotalCount(totalCount);
 
             return ResponseEntity.ok(statistics);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            e.printStackTrace(); 
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

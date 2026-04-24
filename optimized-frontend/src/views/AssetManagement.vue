@@ -241,16 +241,30 @@ const pagination = reactive({
 const fetchAssets = async () => {
   loading.value = true
   try {
-    const params = {
-      ...searchForm,
-      page: pagination.currentPage - 1,
-      size: pagination.pageSize
-    }
+    // 检查是否有搜索条件
+    const hasSearchCriteria = Object.values(searchForm).some(val => 
+      val !== '' && val !== null && val !== undefined && val !== 0 && val !== 10
+    ) && searchForm.sortBy !== 'id' // 排除默认排序项
 
-    const response = await assetApi.search(params)
-    assets.value = response.data.assets
-    pagination.total = response.data.totalItems
-    pagination.totalPages = response.data.totalPages
+    if (!hasSearchCriteria && pagination.currentPage === 1) {
+      // 没有搜索条件且在第一页，尝试获取全量数据
+      const response = await assetApi.getAll()
+      assets.value = response.data
+      pagination.total = response.data.length
+      pagination.totalPages = 1
+      pagination.pageSize = response.data.length
+    } else {
+      // 有搜索条件或在非第一页，使用分页搜索
+      const params = {
+        ...searchForm,
+        page: pagination.currentPage - 1,
+        size: pagination.pageSize
+      }
+      const response = await assetApi.search(params)
+      assets.value = response.data.assets
+      pagination.total = response.data.totalItems
+      pagination.totalPages = response.data.totalPages
+    }
   } catch (error) {
     ElMessage.error('获取资产列表失败：' + error.message)
   } finally {

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = '/api' // 使用 /api 前缀以触发 vite.config.js 中的代理转发
 
 // 资产相关API
 export const assetApi = {

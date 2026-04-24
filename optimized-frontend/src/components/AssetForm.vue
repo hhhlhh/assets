@@ -40,6 +40,31 @@
             <el-option label="市场部" value="市场部" />
           </el-select>
         </el-form-item>
+        
+        <!-- 资产类别详情预览 -->
+        <el-card class="category-preview" v-if="formData.assetCategory">
+          <div class="preview-header">
+            <h4>资产类别详情</h4>
+          </div>
+          <div class="preview-content">
+            <div class="preview-item">
+              <span class="label">类别名称:</span>
+              <span class="value">{{ formData.assetCategory }}</span>
+            </div>
+            <div class="preview-item">
+              <span class="label">推荐品牌:</span>
+              <span class="value">{{ getRecommendedBrand() }}</span>
+            </div>
+            <div class="preview-item">
+              <span class="label">建议使用年限:</span>
+              <span class="value">{{ getSuggestedLifeSpan() }}年</span>
+            </div>
+            <div class="preview-item">
+              <span class="label">典型规格:</span>
+              <span class="value">{{ getTypicalSpecification() }}</span>
+            </div>
+          </div>
+        </el-card>
       </el-col>
     </el-row>
 
@@ -263,7 +288,6 @@ const rules = {
   ]
 }
 
-// Watch for prop changes to populate form in edit mode
 watch(
   () => props.assetData,
   (newData) => {
@@ -281,7 +305,6 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    // Emit submit event with form data
     emit('submit', { ...formData })
   } catch (error) {
     console.error('Validation failed:', error)
@@ -295,12 +318,41 @@ const handleCancel = () => {
   emit('cancel')
 }
 
-// Reset form when switching between add/edit modes
+const getRecommendedBrand = () => {
+  const brands = {
+    '电子设备': ['苹果', '戴尔', '联想', '惠普', '华硕'],
+    '办公设备': ['得力', '晨光', '齐心', '广博', '金旗舰'],
+    '办公家具': ['震旦', '优比', '冠美', '健威', '兆升'],
+    '其他设备': ['通用', '定制', '外购']
+  }
+  const categoryBrands = brands[formData.assetCategory] || ['通用']
+  return categoryBrands[0]
+}
+
+const getSuggestedLifeSpan = () => {
+  const lifeSpans = {
+    '电子设备': 5,
+    '办公设备': 8,
+    '办公家具': 10,
+    '其他设备': 3
+  }
+  return lifeSpans[formData.assetCategory] || 5
+}
+
+const getTypicalSpecification = () => {
+  const specifications = {
+    '电子设备': '标准配置',
+    '办公设备': '常规型号',
+    '办公家具': '标准尺寸',
+    '其他设备': '根据需求定制'
+  }
+  return specifications[formData.assetCategory] || '暂无'
+}
+
 watch(
   () => props.editMode,
   (isEdit) => {
     if (!isEdit) {
-      // Reset form for new asset creation
       Object.assign(formData, {
         assetCode: '',
         assetName: '',
@@ -347,7 +399,42 @@ watch(
   font-weight: 500;
 }
 
-:deep(.el-input-number) {
-  width: 100%;
+.category-preview {
+  margin: 20px 0;
+  background-color: #f8f9fa;
+}
+
+.preview-header h4 {
+  margin: 0 0 15px 0;
+  color: #303133;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.preview-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #ebeef5;
+}
+
+.preview-item .label {
+  font-weight: 500;
+  color: #606266;
+  margin-right: 10px;
+  min-width: 80px;
+}
+
+.preview-item .value {
+  color: #303133;
+  font-weight: 400;
 }
 </style>

@@ -29,6 +29,11 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+
 # 跨域配置
 cors:
   allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
